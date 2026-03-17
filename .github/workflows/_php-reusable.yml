@@ -1,0 +1,61 @@
+name: Reusable PHP workflow
+
+on:
+  workflow_call:
+    inputs:
+      job_name:
+        required: true
+        type: string
+      php_version:
+        required: false
+        type: string
+        default: '8.5'
+      command:
+        required: true
+        type: string
+      extensions:
+        required: false
+        type: string
+        default: 'curl'
+
+permissions:
+  contents: read
+
+jobs:
+  php-job:
+    name: ${{ inputs.job_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php_version }}
+          coverage: none
+          tools: composer:v2
+          extensions: ${{ inputs.extensions }}
+
+      - name: Validate composer files
+        run: composer validate --strict
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ inputs.php_version }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ inputs.php_version }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run job command
+        run: ${{ inputs.command }}

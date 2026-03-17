@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    uses: ./.github/workflows/_php-reusable.yml
+    secrets: inherit
+    with:
+      job_name: PHPUnit
+      php_version: '8.5'
+      command: vendor/bin/phpunit tests --colors=always
