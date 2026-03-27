@@ -19,7 +19,7 @@
     "prefer-stable": true,
     "require": {
         "php": "^8.5",
-        "maskulabs/inertia-psr": "^v3.0.0-beta3-1",
+        "maskulabs/inertia-psr": "^3.0",
         "yiisoft/assets": "^5.1",
         "yiisoft/csrf": "^2.2",
         "yiisoft/data-response": "^2.2",
